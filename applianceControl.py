@@ -1,12 +1,20 @@
+from flaskr.databases.collection_models.queueOperation import queueOperation
 
 ##################################
-#操作キューデータベースにageとsage操作を格納する
+#操作キューデータベースに上げと下げ操作を格納する
 #設定温度は{目標温度 : tTarget}で操作
 
+#指示をdbに保存
+#後でちゃんとdbの構造を見ながら書く
+def order_save(order):
+    queueOperation("ここに入れる値をいろいろ書く").save()
+
+
+#温度が閾値より高くなった時の指示
 def tempHigh(tTarget):
     return "下げる"
 
-
+#温度が閾値より低くなった時の指示
 def tempLow(tTarget):
     return "上げる"
 
@@ -14,7 +22,8 @@ def tempLow(tTarget):
 
 
 #######################温度の差を確認
-def control(sNumber, tActual, tTarget):
+#sNumberいる？
+def control(tActual, tTarget):
     try: 
 
         threshold = 3   #目標値から閾値までの絶対値
