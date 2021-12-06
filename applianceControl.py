@@ -14,8 +14,9 @@ def order_save(appliance, protocol, data, size, frequency = None):
     #文字列にして、bytesにしてからDBへ
     
 
-    data_str = str(data)
-    data = binascii.hexlify(data_str.encode('utf-8'))
+    # data_str = str(data)
+    # data = binascii.hexlify(data_str.encode('utf-8'))
+    data = data.to_bytes(8, "big")
 
     if frequency == None:#NEC、家製協
         print(queueOperation(
