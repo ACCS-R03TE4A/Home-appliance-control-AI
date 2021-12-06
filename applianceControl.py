@@ -2,6 +2,8 @@ from flaskr.databases.collection_models.queueOperation import queueOperation
 import traceback
 import encodings
 import binascii
+from datetime import datetime
+from bson import ObjectId
 
 ##################################
 
@@ -10,35 +12,30 @@ def order_save(appliance, protocol, data, size, frequency = None):
 
     #dataはintで渡されている
     #文字列にして、bytesにしてからDBへ
+    
+
     data_str = str(data)
     data = binascii.hexlify(data_str.encode('utf-8'))
 
     if frequency == None:#NEC、家製協
-        queueOperation(
+        print(queueOperation(
         appliance = appliance,
         protocol = protocol,
         data = data,
         size = size
-        ).save()
+        ).save())
 
     else:#その他
-        queueOperation(
+        print(queueOperation(
         appliance = appliance,
         protocol = protocol,
         data = data,
         size = size,
         frequency = frequency
-        ).save()
+        ).save())
     
-
     print(appliance, protocol, data, size, frequency)
-
     return "/save"
-
-
-#家電ごとに変わる(appliance, protocol),
-#操作指示ごとに変わる(size, frequency)
-
 
 class circulator:
     code = {
@@ -58,12 +55,13 @@ class circulator:
     
     def getInfo(self, ope):
         return circulator.code[self.name][ope]
-    
+
 cir = circulator("学校のサーキュレータ", 3, 64)
 
 #温度が閾値より高くなった時の指示
 def tempHigh(tActual,tTargetHigh):
-    #電源オフ##########################
+
+    #電源オフ
     ope = "OFF"
 
     ##サーキュレータ##
@@ -73,17 +71,15 @@ def tempHigh(tActual,tTargetHigh):
 
 #温度が閾値より低くなった時の指示
 def tempLow(tActual,tTargetLow):
-    #電源オン##############################
+    #電源オン
     ope = "ON"
     
     ##サーキュレータ##
     data = cir.getInfo(ope)
     res = order_save("学校のサーキュレータ", 3, data, 64)
-
     res = res + " <- 電源オン"
 
-    #強中弱#################################
-    #指定の温度は適当
+    #強中弱
     difference = tTargetLow - tActual
     if difference > 3:
         ope = "Low"
@@ -92,13 +88,10 @@ def tempLow(tActual,tTargetLow):
     else:
         ope = "High"
     
-    
     ##サーキュレータ##
     data = cir.getInfo(ope)
     res = res + order_save("学校のサーキュレータ", 3, data, 64)
-    
     return res + " <- 強さ設定"
-
 
 #####################温度の差を確認##########################
 def control(tActual, tTarget):
@@ -110,7 +103,7 @@ def control(tActual, tTarget):
         tTargetHigh = tTarget + threshold
         tTargetLow = tTarget - threshold
 
-        #######温度比較
+        #温度比較
         if tActual > tTargetHigh:
             res = tempHigh(tActual,tTargetHigh)
 
@@ -125,10 +118,8 @@ def control(tActual, tTarget):
             res = " <- ちょうどいい"
         
     
-
     except Exception as e:
         traceback.print_exc()#エラー
         res = "エラー"
 
     return res
-
