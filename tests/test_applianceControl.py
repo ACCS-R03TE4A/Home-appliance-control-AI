@@ -8,7 +8,13 @@ from applianceControl import *
 #     assert not control().testing
 #     assert control({'TESTING': True}).testing
 
-
+@pytest.fixture(scope = 'module', autouse=True)
+def scope_module():
+    print()
+    print(f"-----------------{__name__}のテスト-----------------")
+    yield
+    print(f"--------------------------------------------------------")
+    print()
 
 def test_controlTest_high_1():
     #client = app.test_client()
