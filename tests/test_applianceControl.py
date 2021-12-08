@@ -13,7 +13,6 @@ def scope_function():#いったんmocker抜いた
     #テスト前処理
     #queueOperationを空にする
     queueOperation.objects.all().delete()
-
     print("setup before session")
     yield
     #テスト後処理
@@ -21,6 +20,13 @@ def scope_function():#いったんmocker抜いた
     print("teardown after session")
 
 
+@pytest.fixture(scope = 'module', autouse=True)
+def scope_module():
+    print()
+    print(f"-----------------{__name__}のテスト-----------------")
+    yield
+    print(f"--------------------------------------------------------")
+    print()
 
 
 def test_controlTest_high_1():
@@ -84,46 +90,3 @@ def test_controlTest_low_2():
     operation.delete()
 
     assert ope == "0x17b00ff"
-
-
-
-
-# def test_controlTest_suitable_1():
-#     #client = app.test_client()
-
-#     response = control("0", 20, 20)
-#     #applianceControl.control(sNumber, int(tActual), tTarget)
-
-#     assert response == "tolerance"
-
-# def test_controlTest_suitable_2():
-#     #client = app.test_client()
-
-#     response = control("0", 26, 23)
-#     #applianceControl.control(sNumber, int(tActual), tTarget)
-
-#     assert response == "tolerance"
-
-
-# def test_controlTest_suitable_3():
-#     #client = app.test_client()
-
-#     response = control("0", 18, 21)
-#     #applianceControl.control(sNumber, int(tActual), tTarget)
-
-#     assert response == "tolerance"
-
-
-
-# def test_controlTest_outRange_1():
-#     #client = app.test_client()
-
-#     response = control(18, 21)
-#     #applianceControl.control(sNumber, int(tActual), tTarget)
-
-#     assert response == "tolerance"
-
-
-
-
-
