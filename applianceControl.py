@@ -7,7 +7,6 @@ from bson import ObjectId
 
 ##################################
 
-
 def order_save(appliance, protocol, data, size, frequency = None):
 
     #dataはintで渡されている
@@ -65,6 +64,8 @@ def tempHigh(tActual,tTargetHigh):
     #電源オフ
     ope = "OFF"
 
+    queueOperation.objects(appliance="学校のサーキュレータ").delete()
+
     ##サーキュレータ##
     data = cir.getInfo(ope)
     res = order_save("学校のサーキュレータ", 3, data, 64)
@@ -74,6 +75,8 @@ def tempHigh(tActual,tTargetHigh):
 def tempLow(tActual,tTargetLow):
     #電源オン
     ope = "ON"
+
+    queueOperation.objects(appliance="学校のサーキュレータ").delete()
     
     ##サーキュレータ##
     data = cir.getInfo(ope)
