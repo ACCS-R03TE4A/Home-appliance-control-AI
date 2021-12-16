@@ -1,7 +1,6 @@
 from flaskr.databases.collection_models.queueOperation import queueOperation
 import traceback
 import encodings
-import binascii
 from datetime import datetime
 from bson import ObjectId
 
