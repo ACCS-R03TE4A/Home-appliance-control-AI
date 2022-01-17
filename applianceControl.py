@@ -3,6 +3,8 @@ import traceback
 import encodings
 from datetime import datetime
 from bson import ObjectId
+import requests
+
 
 ##################################
 
@@ -34,7 +36,6 @@ def order_save(appliance, protocol, data, size, frequency = None):
         ).save())
     
     print(appliance, protocol, data, size, frequency)
-    return "/save"
 
 class circulator:
     code = {
@@ -51,6 +52,7 @@ class circulator:
         self.name = name
         self.prot = prot
         self.size = size
+        self.status = 0
     
     def getInfo(self, ope):
         return circulator.code[self.name][ope]
@@ -61,26 +63,39 @@ cir = circulator("学校のサーキュレータ", 3, 64)
 def tempHigh(tActual,tTargetHigh):
 
     #電源オフ
-    ope = "OFF"
-
     queueOperation.objects(appliance="学校のサーキュレータ").delete()
 
-    ##サーキュレータ##
-    data = cir.getInfo(ope)
-    res = order_save("学校のサーキュレータ", 3, data, 64)
-    return res + " <- 電源オフ"
+    if cir.status == 1:
+        ope = "OFF"
+
+        cir.status = 0
+        ##サーキュレータ##
+        data = cir.getInfo(ope)
+        order_save("学校のサーキュレータ", 3, data, 64)
+
+
+        ##リレーモジュール##
+        res = requests.get("http://192.168.59.129/off")
+    
 
 #温度が閾値より低くなった時の指示
 def tempLow(tActual,tTargetLow):
     #電源オン
-    ope = "ON"
-
     queueOperation.objects(appliance="学校のサーキュレータ").delete()
-    
-    ##サーキュレータ##
-    data = cir.getInfo(ope)
-    res = order_save("学校のサーキュレータ", 3, data, 64)
-    res = res + " <- 電源オン"
+
+    if cir.status == 0:
+        ope = "ON"
+
+        
+        cir.status = 1
+        
+        ##サーキュレータ##
+        data = cir.getInfo(ope)
+        order_save("学校のサーキュレータ", 3, data, 64)
+ 
+
+        ##リレーモジュール##
+        res = requests.get("http://192.168.59.129/on")
 
     #強中弱
     difference = tTargetLow - tActual
@@ -93,36 +108,35 @@ def tempLow(tActual,tTargetLow):
     
     ##サーキュレータ##
     data = cir.getInfo(ope)
-    res = res + order_save("学校のサーキュレータ", 3, data, 64)
-    return res + " <- 強さ設定"
+    order_save("学校のサーキュレータ", 3, data, 64)
 
 #####################温度の差を確認##########################
 def control(tActual, tTarget):
     try: 
         res = None
 
-        threshold = 2   #目標値から閾値までの絶対値
+        threshold = 0   #目標値から閾値までの絶対値
 
         tTargetHigh = tTarget + threshold
         tTargetLow = tTarget - threshold
 
         #温度比較
         if tActual > tTargetHigh:
-            res = tempHigh(tActual,tTargetHigh)
+            tempHigh(tActual,tTargetHigh)
 
-            res = res + " <- 温度が高い"
+
         
         elif tActual < tTargetLow:
-            res = tempLow(tActual,tTargetLow)
-
-            res = res + " <- 温度が低い"
+            tempLow(tActual,tTargetLow)
         
-        else: #範囲内
-            res = " <- ちょうどいい"
+
+        print("response",res)
+
+
+        
+
         
     
     except Exception as e:
         traceback.print_exc()#エラー
-        res = "エラー"
 
-    return res
