@@ -100,11 +100,10 @@ def tempLow_relay():
 
 
 
-
-
-
-
-
+#空調家電による近辺温度の変化を学習するメソッド
+def transition_learn():
+    pass
+#
 
 
 
