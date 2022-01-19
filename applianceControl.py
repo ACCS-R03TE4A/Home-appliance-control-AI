@@ -98,24 +98,45 @@ def tempLow_relay():
     requests.get("http://192.168.59.129/on")
 #####
 
+
+
+
+
+
+
+
+
+
+
+def deviceControl(way,tActual,tTargetLow):
+    #way    0:HIGH  
+    #       1:LOW    
+    if way == 0 :
+        tempHigh_cir()
+        tempHigh_relay()
+    
+    elif way == 1:
+        tempLow_cir(tActual,tTargetLow)
+        tempLow_relay()
+
 #####################温度の差を確認##########################
 def control(tActual, tTarget):
     try: 
         #サーキュレータの操作指示の初期化
         queueOperation.objects(appliance="学校のサーキュレータ").delete()
-        
+        way = None
         threshold = 0   #閾値の絶対値
         tTargetHigh = tTarget + threshold
         tTargetLow = tTarget - threshold
 
         #温度比較
         if tActual > tTargetHigh:
-            tempHigh_cir()
-            tempHigh_relay()
+            way = 0
         
         elif tActual < tTargetLow:
-            tempLow_cir(tActual,tTargetLow)
-            tempLow_relay()
+            way = 1
+        
+        deviceControl(way,tActual, tTarget)
 
     except Exception as e:
         traceback.print_exc()#エラー
