@@ -59,45 +59,25 @@ class circulator:
 
 cir = circulator("学校のサーキュレータ", 3, 64)
 
-#温度が閾値より高くなった時の指示
-def tempHigh(tActual,tTargetHigh):
-
-    #電源オフ
-    queueOperation.objects(appliance="学校のサーキュレータ").delete()
-
+#####サーキュレータ#####
+def tempHigh_cir():
     if cir.status == 1:
         ope = "OFF"
-
         cir.status = 0
         ##サーキュレータ##
         data = cir.getInfo(ope)
         order_save("学校のサーキュレータ", 3, data, 64)
 
-
-        ##リレーモジュール##
-        res = requests.get("http://192.168.59.129/off")
-    
-
-#温度が閾値より低くなった時の指示
-def tempLow(tActual,tTargetLow):
+def tempLow_cir(tActual,tTargetLow):
     #電源オン
-    queueOperation.objects(appliance="学校のサーキュレータ").delete()
-
-    if cir.status == 0:
+    if cir.status == 0: #停止中：0,起動中：1
         ope = "ON"
-
-        
         cir.status = 1
-        
         ##サーキュレータ##
         data = cir.getInfo(ope)
         order_save("学校のサーキュレータ", 3, data, 64)
- 
-
-        ##リレーモジュール##
-        res = requests.get("http://192.168.59.129/on")
-
-    #強中弱
+    
+    #強中弱の設定
     difference = tTargetLow - tActual
     if difference > 3:
         ope = "Low"
@@ -105,38 +85,38 @@ def tempLow(tActual,tTargetLow):
         ope = "Mid"
     else:
         ope = "High"
-    
-    ##サーキュレータ##
+
     data = cir.getInfo(ope)
     order_save("学校のサーキュレータ", 3, data, 64)
+#####
+
+#####リレーモジュール
+def tempHigh_relay():
+    requests.get("http://192.168.59.129/off")
+
+def tempLow_relay():
+    requests.get("http://192.168.59.129/on")
+#####
 
 #####################温度の差を確認##########################
 def control(tActual, tTarget):
     try: 
-        res = None
-
-        threshold = 0   #目標値から閾値までの絶対値
-
+        #サーキュレータの操作指示の初期化
+        queueOperation.objects(appliance="学校のサーキュレータ").delete()
+        
+        threshold = 0   #閾値の絶対値
         tTargetHigh = tTarget + threshold
         tTargetLow = tTarget - threshold
 
         #温度比較
         if tActual > tTargetHigh:
-            tempHigh(tActual,tTargetHigh)
-
-
+            tempHigh_cir()
+            tempHigh_relay()
         
         elif tActual < tTargetLow:
-            tempLow(tActual,tTargetLow)
-        
+            tempLow_cir(tActual,tTargetLow)
+            tempLow_relay()
 
-        print("response",res)
-
-
-        
-
-        
-    
     except Exception as e:
         traceback.print_exc()#エラー
 
