@@ -79,12 +79,20 @@ def tempLow_cir(tActual,tTargetLow):
     
     #強中弱の設定
     difference = tTargetLow - tActual
-    if difference > 3:
-        ope = "Low"
-    elif difference > 5:
+    if difference > 5:
+        ope = "High"
+    elif difference > 3:
         ope = "Mid"
     else:
-        ope = "High"
+        ope = "Low"
+
+
+    # if difference > 3:
+    #     ope = "Low"
+    # elif difference > 5:
+    #     ope = "Mid"
+    # else:
+    #     ope = "High"
 
     data = cir.getInfo(ope)
     order_save("学校のサーキュレータ", 3, data, 64)
