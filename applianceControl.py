@@ -100,10 +100,16 @@ def tempLow_cir(tActual,tTargetLow):
 
 #####リレーモジュール
 def tempHigh_relay():
-    requests.get("http://192.168.59.129/off")
+    try:
+        requests.get("http://192.168.59.129/off")
+    except requests.exceptions.ConnectionError:
+        traceback.print_exc()
 
 def tempLow_relay():
-    requests.get("http://192.168.59.129/on")
+    try:
+        requests.get("http://192.168.59.129/on")
+    except requests.exceptions.ConnectionError:
+        traceback.print_exc()
 #####
 
 
